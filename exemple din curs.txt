@@ -1,0 +1,1882 @@
+--BLOCURI ANONIME
+/
+DECLARE
+    nume_student varchar2(10) := 'Alessio';
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('Salut, ma numesc ' ||nume_student|| '.');
+END;
+/
+
+
+--exemplu de procedure
+CREATE OR REPLACE PROCEDURE saluta_student IS
+    nume_student varchar2(20) := 'Dogaru Alessio';
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('Salut, ma numesc ' ||nume_student|| '!');
+END;
+
+/
+BEGIN
+    saluta_student;
+END;
+/
+
+--exemplu de functie
+CREATE OR REPLACE FUNCTION nume_student RETURN VARCHAR2 IS
+BEGIN
+    return 'Dogaru Alessio';
+END;
+/
+
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('Cezar este prieten cu ' ||nume_student);
+END;
+/
+
+--cod in care folosim si PROCEDURE si FUNCTIE
+--1. FUNCTIE CARE CALCULEAZA MEDIA UNUI STUDENT
+CREATE OR REPLACE FUNCTION media(nota1 NUMBER, nota2 NUMBER, nota3 NUMBER) RETURN NUMBER IS
+    medie NUMBER;
+BEGIN
+    medie := (nota1 + nota2 + nota3)/3;
+    RETURN medie;
+END;
+/
+
+--2. PROCEDURA care afiseaza mesaj in functie de medie
+CREATE OR REPLACE PROCEDURE afiseaza_medie(nume VARCHAR2, nota1 NUMBER, nota2 NUMBER, nota3 NUMBER) IS
+    medie_finala NUMBER;
+BEGIN
+    ----folosim functia
+    medie_finala :=  media(nota1, nota2, nota3);
+    IF(medie_finala >= 8) then
+        DBMS_OUTPUT.PUT_LINE('Felicitari, '||nume||'! Ai media '||medie_finala||'.');
+    ELSE
+        DBMS_OUTPUT.PUT_LINE('Continua munca, '||nume||'. Ai media '||TRUNC(medie_finala,2)||'.');
+    END IF;
+END;
+
+/
+
+BEGIN
+    afiseaza_medie('Dogaru Alessio', 6, 7, 10);
+END;
+/
+
+--exemple din curs
+SET SERVEROUTPUT ON;
+DECLARE
+    v_mesaj VARCHAR2(50) := 'Salutare, lume!';
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('Mesaj: '||v_mesaj);
+END;
+
+/
+SET SERVEROUTPUT ON;
+DECLARE
+    v_index NUMBER := 1;
+BEGIN
+    WHILE v_index <=5 LOOP
+        DBMS_OUTPUT.PUT_LINE('Index: '||v_index);
+        v_index := v_index + 1;
+    END LOOP;
+END;
+/
+
+--DECLARAREA VARIABILELOR
+-- v_, c_, p_ (variabile, constante, parametri)
+
+DECLARE
+    v_cartofi NUMBER := 2E4;
+--    v_varsta INTEGER := &i_varsta;
+--    v_nume_student VARCHAR2(20) :=&i_nume;
+    v_nume_film VARCHAR2(20) := 'The Matrix';
+    c_pi CONSTANT DOUBLE PRECISION := 3.141592653;
+    v_salut VARCHAR2(40) DEFAULT 'Bine ati venit!';
+    v_data_de_nastere DATE;
+    v_numar_studenti NUMBER(3) NOT NULL :=3;
+    v_promovam_la_PSGBD BOOLEAN DEFAULT TRUE;
+BEGIN
+    IF v_promovam_la_PSGBD THEN
+        DBMS_OUTPUT.PUT_LINE('TRUE');
+    ELSE
+        DBMS_OUTPUT.PUT_LINE('FALSE');
+    END IF;
+END;
+/
+
+--exemplu cu sysdate
+DECLARE
+    v_azi DATE := SYSDATE;
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('Astazi este: ' || TO_DATE(v_azi, 'DD-MM-YYYY'));
+END;
+/
+
+--Domeniul de vizibilitate (Scope)
+DECLARE
+    v_nume VARCHAR2(20) := 'Cristi';
+    v_varsta INTEGER := 21;
+BEGIN
+    DBMS_OUTPUT.PUT_LINE(v_nume); --Cristi
+    DECLARE
+        v_nume NUMBER := 5;
+    BEGIN
+        DBMS_OUTPUT.PUT_LINE(v_nume); --5
+        DBMS_OUTPUT.PUT_LINE(v_varsta); --21
+    END;
+    DBMS_OUTPUT.PUT_LINE(v_nume); -- Cristi
+END;
+/
+
+
+<<global>>
+DECLARE
+    v_nume VARCHAR2(20) := 'Cristi';
+BEGIN
+    DECLARE
+        v_nume NUMBER := 5;
+    BEGIN
+        DBMS_OUTPUT.PUT_LINE(v_nume); -- 5
+        DBMS_OUTPUT.PUT_LINE(global.v_nume); -- Cristi
+    END;
+END;
+/
+
+
+-- Operatori
+DECLARE
+    a NUMBER:= 10;
+    b NUMBER := 4;
+BEGIN
+    DBMS_OUTPUT.PUT_LINE(a + b); -- 14
+    DBMS_OUTPUT.PUT_LINE(a ** b); -- 10^4=10000
+END;
+/
+
+DECLARE
+    a NUMBER := 10;
+    b NUMBER := 4;
+BEGIN
+    IF a > b THEN
+        DBMS_OUTPUT.PUT_LINE('a > b');
+    END IF;
+END;
+/
+
+DECLARE
+    a NUMBER :=100;
+BEGIN
+    IF a BETWEEN 20 AND 80 THEN
+        DBMS_OUTPUT.PUT_LINE('a este intre 20 si 80');
+    ELSE
+        DBMS_OUTPUT.PUT_LINE('a NU este intre 20 si 80');
+    END IF;
+    
+END;
+/
+
+-- Preluarea unei singure valori dintr-un tabel
+
+SET SERVEROUTPUT ON;
+
+DECLARE
+    v_nume STUDENTI.nume%TYPE;  -- sau VARCHAR2(100) dacă nu vrei cu %TYPE
+BEGIN
+    SELECT nume INTO v_nume FROM STUDENTI WHERE ROWNUM = 1;
+    DBMS_OUTPUT.PUT_LINE('Primul student: ' || v_nume);
+END;
+/
+
+DECLARE
+    v_valoare_nota_maxima note.valoare%TYPE;
+    v_valoare_nota_minima v_valoare_nota_maxima%TYPE;
+BEGIN
+    SELECT MAX(valoare) INTO v_valoare_nota_maxima FROM note;
+    SELECT MIN(valoare) INTO v_valoare_nota_minima FROM note;
+    DBMS_OUTPUT.PUT_LINE('Nota maxima: '||v_valoare_nota_maxima);
+    DBMS_OUTPUT.PUT_LINE('Nota minima: '||v_valoare_nota_minima);
+END;
+/
+
+DECLARE
+    v_nume_familie VARCHAR2(20) := 'Postolache';
+    v_numar_studenti NUMBER;
+    v_id_prenume STUDENTI%ROWTYPE;
+    v_nota_minima NUMBER;
+    v_nota_maxima NUMBER;
+    v_putere NUMBER;
+BEGIN
+    --nr studenti cu acelasi nume
+    SELECT COUNT(*) INTO v_numar_studenti FROM STUDENTI WHERE NUME = v_nume_familie;
+
+    IF v_numar_studenti = 0 THEN
+        DBMS_OUTPUT.PUT_LINE('Nu exista niciun student cu numele de familie: ' || v_nume_familie);
+    ELSE
+        -- extragem primul student in ordine lexicografica
+        SELECT * INTO v_id_prenume
+        FROM (SELECT * FROM STUDENTI WHERE NUME = v_nume_familie ORDER BY PRENUME)
+        WHERE ROWNUM = 1;
+
+        --nota minima si nota maxima
+        SELECT MIN(valoare), MAX(valoare) INTO v_nota_minima, v_nota_maxima
+        FROM NOTE
+        WHERE id_student = v_id_prenume.id;
+
+        --calculam puterea
+        v_putere := POWER(v_nota_maxima, v_nota_minima);
+
+        --afisam rezultatele
+        DBMS_OUTPUT.PUT_LINE('Nr studenti cu numele ' || v_nume_familie || ': ' || v_numar_studenti);
+        DBMS_OUTPUT.PUT_LINE('Student: ID=' || v_id_prenume.ID || ', PRENUME=' || v_id_prenume.PRENUME);
+        DBMS_OUTPUT.PUT_LINE('Nota minima: ' || v_nota_minima);
+        DBMS_OUTPUT.PUT_LINE('Nota maxima: ' || v_nota_maxima);
+        DBMS_OUTPUT.PUT_LINE('Nota maxima ^ Nota minima: ' || v_putere);
+    END IF;
+END;
+/
+
+-- folosirea %TYPE pentru selectarea de valori din coloana
+
+-- STRUCTURI DE CONTROL
+
+DECLARE
+    v_numar NUMBER(5) := 90;
+BEGIN
+    IF (v_numar < 10) THEN
+        DBMS_OUTPUT.PUT_LINE('Numarul este mai mic decat 10');
+    ELSIF (v_numar > 80) THEN
+        DBMS_OUTPUT.PUT_LINE('Numarul este mai mare ca 80');
+    ELSE
+        DBMS_OUTPUT.PUT_LINE('Numarul este intre 10 si 80');
+    END IF;
+END;
+/
+
+DECLARE
+    numar NUMBER:= 10;
+BEGIN
+    CASE (numar)
+        WHEN 1 THEN DBMS_OUTPUT.PUT_LINE('numarul este 1');
+        WHEN 2 THEN DBMS_OUTPUT.PUT_LINE('numarul este 2');
+        ELSE
+            DBMS_OUTPUT.PUT_LINE('numar >=3');
+    END CASE;
+END;
+/
+
+-- structuri iterative
+DECLARE
+    v_contor INTEGER := 0;
+BEGIN
+    WHILE(v_contor < 10) LOOP
+        v_contor := v_contor + 1;
+        DBMS_OUTPUT.PUT_LINE(v_contor);
+    END LOOP;
+END;
+/
+
+-- LOOP folosind FOR
+DECLARE
+    v_contor INTEGER := 0;
+BEGIN
+    FOR v_contor IN 1..6 LOOP -- pentru parcurgere inversa: IN REVERSE 1..10
+        DBMS_OUTPUT.PUT_LINE(v_contor * 2);
+    END LOOP;
+END;
+/
+
+--comanda EXIT
+
+DECLARE
+    v_contor1 INTEGER;
+    v_contor2 INTEGER;
+BEGIN
+    <<eticheta>>
+    FOR v_contor1 in 1..5 LOOP
+        FOR v_contor2 in 10..20 LOOP
+            CONTINUE WHEN (v_contor1=2);
+            DBMS_OUTPUT.PUT_LINE(v_contor1||'-'||v_contor2);
+            EXIT eticheta WHEN ((v_contor1=3) and (v_contor2=17));
+        END LOOP;
+    END LOOP;
+END;
+/
+
+--utilizare comanda GO TO
+DECLARE
+    v_numar NUMBER :=6;
+BEGIN
+    IF (v_numar = 5) THEN
+        GOTO eticheta;
+    ELSE
+        DBMS_OUTPUT.PUT_LINE('Nu se va afisa');
+    END IF;
+    <<eticheta>>
+    DBMS_OUTPUT.PUT_LINE('Se afiseaza');
+END;
+/
+
+-- UTILIZAREA CURSOARELOR
+-- 3 cursori implicite: SQL%FOUND, SQL%NOTFOUND, SQL%ROWCOUNT.
+
+DECLARE
+    v_randuri INTEGER;
+BEGIN
+    UPDATE studenti set bursa = bursa + 10 WHERE bursa > 600;
+    IF(SQL%FOUND) THEN
+        DBMS_OUTPUT.PUT_LINE('Am marit bursa la '||SQL%ROWCOUNT|| ' STUDENTI.');
+    ELSE
+        DBMS_OUTPUT.PUT_LINE('Nimanui nu i s-a marit bursa');
+    END IF;
+END;
+/
+
+--pasii de urmat la cursor sunt: DECLARAREA, DESCHIDEREA, PRELUAREA DE LINII SI INCHIDEREA CURSORULUI
+
+DECLARE
+    CURSOR lista_studenti_bursieri IS
+        SELECT nume, prenume FROM studenti WHERE bursa > 1400;
+    v_nume studenti.nume%TYPE;
+    v_prenume studenti.prenume%TYPE;
+BEGIN
+    OPEN lista_studenti_bursieri;
+    LOOP
+        FETCH lista_studenti_bursieri INTO v_nume, v_prenume;
+        EXIT WHEN lista_studenti_bursieri%NOTFOUND;
+        DBMS_OUTPUT.PUT_LINE(v_nume||' - '||v_prenume);
+    END LOOP;
+    CLOSE lista_studenti_bursieri;
+END;
+/
+--DECLARE
+--    CREATE TABLE indivizi(nume varchar2(10), prenume varchar2(10));
+--BEGIN
+--    INSERT INTO indivizi SELECT upper(nume), prenume FROM studenti;
+--    INSERT INTO indivizi SELECT upper(nume), prenume FROM profesori;
+--END;    
+
+
+DECLARE
+    CURSOR lista_studenti IS
+        SELECT * FROM studenti;
+    v_std_linie lista_studenti%ROWTYPE;
+BEGIN
+--    OPEN lista_studenti;
+--    LOOP
+--        FETCH lista_studenti INTO v_std_linie;
+--        EXIT WHEN lista_studenti%NOTFOUND;
+--        DBMS_OUTPUT.PUT_LINE(v_std_linie.nume||' '||v_std_linie.data_nastere);
+--    END LOOP;
+--    CLOSE lista_studenti;
+    FOR v_std_linie IN lista_studenti LOOP
+        DBMS_OUTPUT.PUT_LINE(v_std_linie.nume||' '||v_std_linie.data_nastere);
+    END LOOP;
+END;
+/
+
+
+DECLARE
+    CURSOR lista_studenti_bursieri (p_bursa studenti.bursa%type, p_an studenti.an%type) IS
+        SELECT nume, prenume FROM studenti WHERE bursa > p_bursa AND an > p_an;
+    v_std_linie lista_studenti_bursieri%ROWTYPE;
+BEGIN
+    OPEN lista_studenti_bursieri(300, 2);
+    LOOP
+        FETCH lista_studenti_bursieri INTO v_std_linie;
+        EXIT WHEN lista_studenti_bursieri%NOTFOUND;
+        DBMS_OUTPUT.PUT_LINE(v_std_linie.nume||' '||v_std_linie.prenume);
+    END LOOP;
+    CLOSE lista_studenti_bursieri;
+END;
+/
+
+
+DECLARE
+    CURSOR update_note IS
+        SELECT * FROM note FOR UPDATE OF valoare NOWAIT;
+BEGIN
+    FOR v_linie IN update_note LOOP
+        IF(v_linie.valoare < 5) THEN
+            UPDATE note SET valoare=5 WHERE CURRENT OF update_note;
+        END IF;
+    END LOOP;
+END;
+/
+
+
+-- Stocarea subprogramelor
+CREATE OR REPLACE PROCEDURE afiseaza AS
+    my_name varchar2(20):='Gigel';
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('Ma cheama '||my_name);
+END afiseaza;
+/
+
+BEGIN
+ afiseaza();
+END;
+/
+-- pentru a afisa codu de la procedura afiseaza
+SELECT text FROM user_source WHERE LOWER(name) LIKE 'afiseaza';
+
+/
+
+CREATE OR REPLACE PROCEDURE inc (p_val IN OUT NUMBER) AS
+BEGIN
+   p_val := p_val + 1;
+END;
+/
+
+set serveroutput on;
+DECLARE
+   v_numar NUMBER := 7;
+BEGIN
+   inc(v_numar);
+   DBMS_OUTPUT.PUT_LINE( v_numar );
+END;
+/
+
+DECLARE
+    v_numar NUMBER := 5;
+BEGIN
+   inc(v_numar);
+   DBMS_OUTPUT.PUT_LINE(v_numar);
+END;
+/
+
+DECLARE
+   v_numar varchar2(10) := '7';
+BEGIN
+   inc(v_numar);
+   DBMS_OUTPUT.PUT_LINE( v_numar );
+END;
+/
+
+
+CREATE OR REPLACE PROCEDURE pow (p_baza IN Integer := 3, p_exponent IN INTEGER DEFAULT 5) AS
+   v_rezultat INTEGER;
+BEGIN
+    v_rezultat := p_baza ** p_exponent;
+    DBMS_OUTPUT.PUT_LINE(v_rezultat);
+END;
+/
+
+BEGIN
+   pow(2, 3);
+END;
+/
+
+BEGIN
+   pow(p_baza=>2, p_exponent=>3);
+END;
+/
+
+BEGIN
+   pow(p_exponent=>3, p_baza=>2);
+END;
+/
+
+BEGIN
+   pow(2, p_exponent=>3);
+END;
+/
+
+BEGIN
+   pow(p_baza=>2);
+END;
+/
+
+BEGIN
+   pow(p_exponent=>3);
+END;
+/
+
+-- FUNCTII
+CREATE OR REPLACE FUNCTION make_waves(p_sir_caractere varchar2) RETURN varchar2 AS
+    v_index INTEGER;
+    v_rezultat varchar2(1000):='';
+BEGIN
+    FOR v_index in 1..length(p_sir_caractere) LOOP
+        IF(v_index MOD 2 = 1) THEN
+            v_rezultat := v_rezultat || UPPER(SUBSTR(p_sir_caractere,v_index,1));
+        ELSE
+            v_rezultat := v_rezultat || LOWER(SUBSTR(p_sir_caractere,v_index,1));
+        END IF;
+    END LOOP;
+    return v_rezultat;
+END;
+/
+
+select make_waves('Facultatea de informatica') from dual;
+/
+
+DECLARE
+   v_sir VARCHAR2(1000) :='Facultatea de informatica';
+BEGIN
+   v_sir := make_waves(v_sir);
+   DBMS_OUTPUT.PUT_LINE(v_sir);
+END;
+/
+
+-- Colectii si inregistrari
+set serveroutput on;
+DECLARE 
+    TYPE MyTab IS TABLE OF NUMBER INDEX BY VARCHAR2(10);
+    varsta MyTab;
+BEGIN
+   varsta('Gigel') := 3;
+   varsta('Ionel') := 4;
+   DBMS_OUTPUT.PUT_LINE('Varsta lui Gigel este ' || varsta('Gigel'));
+   DBMS_OUTPUT.PUT_LINE('Varsta lui Ionel este ' || varsta('Ionel'));
+END;
+/
+
+DECLARE 
+    TYPE MyTab IS TABLE OF number INDEX BY varchar2(20);
+    linii MyTab;  
+BEGIN
+    linii(sysdate) := 123;
+    DBMS_OUTPUT.PUT_LINE(linii(sysdate));
+END;
+/
+
+DECLARE 
+    TYPE MyTab IS TABLE OF NUMBER INDEX BY VARCHAR2(10);
+    varsta MyTab;
+BEGIN
+   varsta('Gigel') := 3;
+   varsta('Ionel') := 4;
+   varsta('Maria') := 6;
+   
+   DBMS_OUTPUT.PUT_LINE('Numar de elemente in lista: ' || varsta.COUNT);
+   
+   DBMS_OUTPUT.PUT_LINE('Prima cheie din lista: ' || varsta.FIRST);
+   DBMS_OUTPUT.PUT_LINE('Ultima cheie din lista: ' || varsta.LAST);
+
+   DBMS_OUTPUT.PUT_LINE('Inaintea lui Ionel in lista: ' || varsta.PRIOR('Ionel'));
+   DBMS_OUTPUT.PUT_LINE('Dupa Ionel in lista: ' || varsta.NEXT('Ionel'));
+      
+   varsta.DELETE('Maria');   
+   DBMS_OUTPUT.PUT_LINE('Dupa Ionel in lista: ' || varsta.NEXT('Ionel'));   
+END;
+/
+set serveroutput on;
+DECLARE
+    TYPE prenume IS TABLE OF varchar2(10);
+    student prenume;
+BEGIN
+    student := prenume('Gigel', 'Ionel');
+    for i in student.first..student.last loop
+       DBMS_OUTPUT.PUT_LINE(i||' - '||student(i));    
+    end loop;
+END;
+/
+
+DECLARE 
+    TYPE prenume IS TABLE OF varchar2(10);
+    student prenume;
+BEGIN
+    student := prenume('Gigel', 'Ionel', 'Maria');  
+    student.EXTEND(4,2); -- copii elementul al doilea de 4 ori
+    student.delete(2); -- sterg elementul al doilea
+    for i in student.first..student.last loop
+        if student.exists(i) then -- daca incerc sa afisez ceva ce nu exista se va produce o eroare
+           DBMS_OUTPUT.PUT_LINE(i||' - '||student(i));  -- afisam pozitia si valoarea
+        end if;
+    end loop;
+END;
+/
+
+DECLARE
+    TYPE prenume IS TABLE OF varchar2(10);
+    student prenume := prenume();
+    student_err prenume;
+BEGIN  
+    student.EXTEND; -- merge ok
+    student_err.EXTEND; -- da eroare pentru ca este null (sau nu a fost initializat)
+END;
+/
+
+DECLARE 
+    CURSOR curs IS SELECT nume, prenume FROM studenti;
+   -- cursorul este utilizat doar in linia urmatoare, pentru a defini tipul valorilor 
+   -- din nested table. Se poate folosi si un record in care definiti doar nume, prenume.
+   TYPE linie_student IS TABLE OF curs%ROWTYPE;
+   lista_studenti linie_student;
+BEGIN
+   SELECT nume, prenume BULK COLLECT INTO lista_studenti FROM studenti;
+    for i in lista_studenti.first..lista_studenti.last loop
+        if lista_studenti.exists(i) then -- daca incerc sa afisez ceva ce nu exista se va produce o eroare
+           DBMS_OUTPUT.PUT_LINE(i||' - '||lista_studenti(i).nume);  -- afisam pozitia si valoarea
+        end if;
+    end loop;   
+    DBMS_OUTPUT.PUT_LINE('Numar studenti: '||lista_studenti.COUNT);
+END;
+/
+
+GRANT CREATE TYPE TO STUDENT; -- aceasta linie se executa din "SYS as SYSDBA"
+
+CREATE OR REPLACE TYPE lista_prenume AS TABLE OF VARCHAR2(10);
+/
+CREATE TABLE persoane (nume varchar2(10), 
+       prenume lista_prenume)
+       NESTED TABLE prenume STORE AS lista;
+/       
+
+INSERT INTO persoane VALUES('Popescu', lista_prenume('Ionut', 'Razvan'));
+INSERT INTO persoane VALUES('Ionescu', lista_prenume('Elena', 'Madalina'));
+INSERT INTO persoane VALUES('Rizea', lista_prenume('Mircea', 'Catalin'));
+/
+SELECT * FROM persoane;
+
+-- mai multe operatii direct cu tabelele interne dintr-un tabel gasiti in linkurile de la inceputul acestei pagini.
+/
+-- inserare in aceasta noua tabela o persoana
+DECLARE
+    sir_prenume persoane.prenume%type;
+BEGIN
+    sir_prenume := lista_prenume('Cristi', 'Tudor', 'Virgil');
+    INSERT INTO persoane VALUES ('Gurau', sir_prenume);
+    DBMS_OUTPUT.PUT_LINE('Gata');
+END;
+/
+
+
+-- tablouri cu dimensiune variabila
+DECLARE
+  TYPE varr IS VARRAY(5) OF varchar2(10);
+  orase varr;
+BEGIN
+  orase := varr('Iasi', 'Bacau', 'Suceava', 'Botosani');
+  DBMS_OUTPUT.PUT_LINE('Numar orase: '||orase.COUNT);
+  orase.TRIM;
+  FOR i IN orase.FIRST..orase.LAST LOOP
+     DBMS_OUTPUT.PUT_LINE(orase(i));
+  END LOOP;
+  
+  orase.EXTEND(2);
+  orase(4):='Sibiu';
+  orase(5):='Brasov';
+  DBMS_OUTPUT.PUT_LINE('Dupa adaugare:');
+  FOR i IN orase.FIRST..orase.LAST LOOP
+     DBMS_OUTPUT.PUT_LINE(orase(i));
+  END LOOP;  
+END;
+/
+
+--Funcţii ce pot fi utilizate pentru colecţii
+--FIRST - returnează valoarea cheii (sau indicele) primului element;
+--LAST - returnează valoarea cheii (sau indicele) ultimului element;
+--PRIOR(cheie) - returnează cheia elementului dinaintea celui dat ca parametru (cheie poate fi şi o valoare numerică dacă este vorba despre altceva decât tablouri asociative);
+--NEXT(cheie) - returnează cheia elementului următor celui dat ca parametru (cheie poate fi şi o valoare numerică dacă este vorba despre altceva decât tablouri asociative);
+--EXISTS(cheie) - returnează valoarea true dacă există o valoarea atribuită cheii (cheia poate fi şi poziţia într-o colecţie în cazul în care nu este vorba de tablouri asociative);
+--COUNT - returnează numărul de elemente din colecţie;
+--varray.LIMIT - câte elemente pot fi adăugatre în variabila de tip varray;
+--EXTEND [(n[,i])] - pentru tipul tabel şi varray: pentru a adăuga n poziţii în structură (eventual toate având valoarea elementului de pe poziţia i ). În cazul în care nu există nici un parametru, se extinde cu un singur element. Nu se aplică tabelelor asociative;
+--TRIM [(n)] - şterge n elemente de la sfârştiul unei variabile de tip tabel sau dintr-un varray (nu este şi pentru tablouri asociative). În cazul în care n nu este dat, se şterge ultimul element;
+--DELETE [(n,[m])]- şterge fie toate elementele (când nu are parametru), fie elementul de pe poziţia n, fie elem
+
+--tipul inregistrare: RECORD
+CREATE TABLE minions (culoare varchar2(20), numar_ochi number(3), nume varchar2(20));
+ /
+DECLARE
+   TYPE minion IS RECORD(
+      culoare varchar2(20) := 'Galben', 
+      numar_ochi number(3), 
+      nume varchar2(20)
+      );
+   v_minion minion;   
+BEGIN      
+   v_minion.culoare:='Galben';
+   v_minion.numar_ochi := 2;
+   v_minion.nume:='Kevin';
+   INSERT INTO MINIONS VALUES V_MINION;
+   DBMS_OUTPUT.PUT_LINE(v_minion.culoare);
+END;
+/
+
+-- PACHETE
+
+--Antetul
+--Pentru a crea un antetul unui pachet se utilizează sintaxa:
+--
+--CREATE [OR REPLACE] PACKAGE nume_pachet IS|AS
+--        tipuri publice 
+--        declaraţii de variabile publice (vor fi iniţializate cu NULL daca nu se specifica altceva)
+--        specificaţii publice pentru subprograme
+--END [nume_pachet]
+
+CREATE OR REPLACE PACKAGE manager_facultate IS
+      g_today_date   DATE:= SYSDATE;
+      CURSOR lista_studenti IS SELECT nr_matricol, nume, prenume, grupa, an FROM studenti ORDER BY nume;
+     PROCEDURE adauga_student (nume studenti.nume%type, prenume studenti.prenume%type);
+     PROCEDURE sterge_student (nr_matr studenti.nr_matricol%type);
+END manager_facultate;
+/
+
+--Body
+--Pentru a construi şi body-ul, se utilizează următoarea sintaxă:
+--
+--CREATE [OR REPLACE] PACKAGE BODY nume_pachet IS|AS
+--      variabile şi tipuri de date private 
+--      conţinutul subprogramelor (fie publice fie private);
+--[BEGIN  zona de initializare]
+--END nume_pachet;
+
+
+CREATE OR REPLACE PACKAGE BODY manager_facultate IS
+    nume_facultate VARCHAR2(100) := 'Facultatea de Informatica din IASI';
+
+    FUNCTION calculeaza_varsta (data_nastere DATE) RETURN INT AS
+    BEGIN
+       RETURN FLOOR((g_today_date - data_nastere)/365);
+    END calculeaza_varsta;   
+
+    PROCEDURE adauga_student (nume studenti.nume%type, prenume studenti.prenume%type) 
+       IS BEGIN
+           DBMS_OUTPUT.PUT_LINE('Exemplu apel functie privata: '|| calculeaza_varsta(to_date('01/01/1990','DD/MM/YYYY')));
+           DBMS_OUTPUT.PUT_LINE('Aici ar trebui sa scrieti cod pentru adaugarea unui student');
+    END adauga_student;
+    
+    PROCEDURE sterge_student (nr_matr studenti.nr_matricol%type) IS
+    BEGIN
+       null; -- nu face nimic
+    END sterge_student;
+    
+END manager_facultate;
+/
+
+set serveroutput on;
+BEGIN
+   manager_facultate.adauga_student('Becali', 'Gigi');
+END;
+/
+
+DROP PACKAGE BODY manager_facultate;
+/
+
+--Obiecte
+--Linkuri utile:
+--
+--http://www.tutorialspoint.com/plsql/plsql_object_oriented.htm
+--https://docs.oracle.com/cd/B28359_01/appdev.111/b28371/adobjplsql.htm
+--https://docs.oracle.com/cd/B13789_01/appdev.101/b10807/10_objs.htm#i16312
+--În majoritatea limbajelor de programare moderne programarea este orientată-obiect. Deşi scripturile care sunt necesare în cadrul bazelor de date sunt de obicei destul de simple şi fac lucruri specifice asupra unei baze de date, şi în cadrul PL/SQL este permis lucrul cu obiecte.
+
+--Construirea unei clase
+CREATE OR REPLACE TYPE student2 AS OBJECT
+(nume varchar2(10),
+ prenume varchar2(10),
+ grupa varchar2(4),
+ an number(1), 
+ data_nastere date,
+ member procedure afiseaza_foaie_matricola
+);
+/
+
+--Pentru a crea secţiunea de body se va utiliza următoarea sintaxă:
+--
+--CREATE OR REPLACE TYPE BODY student AS
+--        .................
+--ENDl
+
+CREATE OR REPLACE TYPE BODY student2 AS
+   MEMBER PROCEDURE afiseaza_foaie_matricola IS
+   BEGIN
+       DBMS_OUTPUT.PUT_LINE('Aceasta procedura calculeaza si afiseaza foaia matricola');
+   END afiseaza_foaie_matricola;
+END;
+/
+
+CREATE TABLE studenti_oop (nr_matricol VARCHAR2(4), obiect STUDENT2);
+/
+
+SET SERVEROUTPUT ON;
+DECLARE
+   v_student1 STUDENT2;
+   v_student2 STUDENT2;
+BEGIN
+   v_student1 := student2('Popescu', 'Ionut', 'A2', 3, TO_DATE('11/04/1994', 'dd/mm/yyyy'));
+   v_student2 := student2('Vasilescu', 'George', 'A4', 3, TO_DATE('22/03/1995', 'dd/mm/yyyy'));
+   
+   v_student1.afiseaza_foaie_matricola;
+   DBMS_OUTPUT.PUT_LINE(v_student1.nume);
+   
+   INSERT INTO studenti_oop VALUES ('100', v_student1);
+   INSERT INTO studenti_oop VALUES ('101', v_student2);
+END;
+/
+
+SELECT TREAT(obiect AS student2).nume FROM studenti_oop;
+/
+--În cadrul declaraţiei obiectului adăugaţi ca şi metodă constructorul:
+
+CONSTRUCTOR FUNCTION student(nume varchar2, prenume varchar2)
+    RETURN SELF AS RESULT
+/
+
+CONSTRUCTOR FUNCTION student2(nume varchar2, prenume varchar2)
+    RETURN SELF AS RESULT AS
+BEGIN
+    SELF.nume := nume;
+    SELF.prenume := prenume;
+    SELF.data_nastere := sysdate;
+    SELF.an := 1;
+    SELF.grupa := 'A1';
+    RETURN;
+END;   
+
+/
+
+-- sortare si comparare
+
+if (v_student1 < v_student2) 
+    THEN DBMS_OUTPUT.PUT_LINE('Studentul '|| v_student1.nume || ' este mai tanar.');
+    ELSE DBMS_OUTPUT.PUT_LINE('Studentul '|| v_student2.nume || ' este mai tanar.');
+END IF;
+/
+
+--Moştenirea în PLSQL
+--În PLSQL, la fel ca şi în alte limbaje orientate obiect, se pot crea obiecte plecând de la obiectele existente. Pentru a putea crea un obiect-copil, clasa parinte (superclasă) trebuie să fie declarată ca NOT FINAL (valoarea predefinită este FINAL). Refaceţi tipul student adăugând cuvintele NOT FINAL (la final). Pentru a permite suprascrierea unei metode din cadrul obiectului, în faţa declaraţiei sale trebuie să fie scrise cuvintele NOT FINAL.
+
+
+CREATE OR REPLACE TYPE student2 AS OBJECT
+(nume varchar2(10),
+ prenume varchar2(10),
+ grupa varchar2(4),
+ an number(1), 
+ data_nastere date,
+ NOT FINAL member procedure afiseaza_foaie_matricola,
+ map member FUNCTION varsta_in_zile RETURN NUMBER, 
+ CONSTRUCTOR FUNCTION student(nume varchar2, prenume varchar2)
+    RETURN SELF AS RESULT
+) NOT FINAL;
+/
+
+
+--codul care creează o subclasă a clasei student care are în plus o proprietate "bursa" şi care suprascrie metoda de afişare a foii matricole.
+
+drop type student_bazat;
+CREATE OR REPLACE TYPE student_bazat UNDER student
+(    
+   bursa NUMBER(6,2),
+   OVERRIDING member procedure afiseaza_foaie_matricola
+)
+/
+
+
+CREATE OR REPLACE TYPE BODY student_bazat AS
+    OVERRIDING MEMBER PROCEDURE afiseaza_foaie_matricola IS
+    BEGIN
+       dbms_output.put_line('bursier');
+    END afiseaza_foaie_matricola;
+END;
+/
+
+DECLARE
+   v_student_bazat student_bazat;
+BEGIN
+    v_student_bazat := student_bazat('Mihalcea', 'Mircea', 'A1', 2, TO_DATE('18/09/1996', 'dd/mm/yyyy'), 1000);
+    dbms_output.put_line(v_student_bazat.nume);
+    v_student_bazat.afiseaza_foaie_matricola();
+END;
+/
+
+--Pentru a crea o clasă abstractă utilizaţi NOT INSTANTIABLE după declaraţia clasei (înainte de NOT FINAL)
+
+DECLARE
+  s student;
+BEGIN
+  SELECT obiect INTO s FROM studenti_oop WHERE nr_matricol='100';
+  dbms_output.put_line(s.nume);
+END;
+
+
+----TRIGGERE-----
+/*Tipuri de triggere
+1. de tip DML
+2. de tip DDL
+3. system
+*/
+
+Necesar:
+- timpul cand se declanseaza un trigger
+- actiunea cand se declanseaza
+- asupra cui (tabela si eventual coloana|view)
+
+--1. Triggere de tip DML (cu BEFORE / AFTER): delete, insert, update
+
+set serveroutput on;
+
+CREATE OR REPLACE TRIGGER dml_stud
+   BEFORE INSERT OR UPDATE OR DELETE ON studenti
+DECLARE  -- la triggere se adauga cuvantul DECLARE pentru declaratii variabile, fata de subprograme
+   nume varchar2(100);
+BEGIN
+    -- puteti sa vedeti cine a declansat triggerul:
+  select user into nume from dual;
+  dbms_output.put_line('Operatie DML in tabela studenti ! Realizata de catre userul: '||nume);
+
+  CASE
+     WHEN INSERTING THEN DBMS_OUTPUT.PUT_LINE('INSERT');
+     WHEN DELETING THEN DBMS_OUTPUT.PUT_LINE('DELETE');
+     WHEN UPDATING THEN DBMS_OUTPUT.PUT_LINE('UPDATE');
+     
+     -- vedeti mai jos trigere ce se executa doar la modificarea unui anumit camp, exemplu nume
+     -- WHEN UPDATING('PRENUME') THEN .... 
+     
+  END CASE;
+END;
+/
+select * from studenti where id=1025;/
+select count(*) from note where id_student=1025;/
+select count(*) from prieteni where id_student1=1025 or id_student2=1025;/
+
+delete from studenti where id=1025;
+rollback;
+
+-------------------------------------------------------------------------------
+--Efectul BEFORE/AFTER 
+CREATE OR REPLACE TRIGGER dml_stud1
+   BEFORE INSERT OR UPDATE OR DELETE ON studenti
+declare   
+   v_nume studenti.nume%type;
+BEGIN  
+  select nume into v_nume from studenti where id=200;
+  dbms_output.put_line('Before DML TRIGGER: ' || v_nume);
+END;
+/
+
+CREATE OR REPLACE TRIGGER dml_stud2
+   AFTER INSERT OR UPDATE OR DELETE ON studenti
+declare   
+   v_nume studenti.nume%type;
+BEGIN  
+  select nume into v_nume from studenti where id=200;
+  dbms_output.put_line('After DML TRIGGER: ' || v_nume);
+END;
+/
+
+update studenti set nume='NumeNou' where id=200;
+select * from studenti where id=200;
+-- dupa cum se poate vedea au fost declansate toate cele 3 triggere pe tabela studenti:
+--dml_stud, dml_stud1 si dml_stud2
+rollback;
+
+-- ce se intampla cand se modifica alt id?
+select * from studenti where id=1025;
+update studenti set nume='Numenou' where id=1025; -- este afisat numele user 200 de fapt, inainte si la fel dupa update
+select * from studenti where id=1025; -- s-a facut update pe nume pt user 1025
+select * from studenti where id=200; --nu s-a facut modificare pt user 200, doar este afisat numele lui in trigger
+rollback;
+
+-------  :OLD si :NEW -- DOAR PENTRU TIGERRE DE TIP EACH ROW!!!
+-- La insert - :NEW exista si :OLD este null
+-- La update - ambele
+-- La delete - :OLD si :NEW este null
+
+CREATE OR REPLACE TRIGGER marire_nota
+  before UPDATE OF valoare ON note   -- aici se executa numai cand modificam valoarea !
+  FOR EACH ROW -- se va declansa pentru fiecare rand modificat
+BEGIN
+  dbms_output.put_line('ID nota: ' || :OLD.id); 
+  -- observati ca aveti acces si la alte campuri, nu numai la cele modificate...
+  dbms_output.put_line('Vechea nota: ' || :OLD.valoare);  
+  dbms_output.put_line('Noua nota: ' || :NEW.valoare);    
+
+  -- totusi nu permitem sa facem update daca valoarea este mai mica (conform regulamentului universitatii):
+  IF (:OLD.valoare>:NEW.valoare) THEN :NEW.valoare := :OLD.valoare;
+  end if;  
+  --aici sa afisez de fapt care este nota finala
+END;
+/
+
+update note set valoare =8 where id between 1 and 6;
+select * from note where id  between 1 and 6;
+-- s-a modificat :NEW doar pentru ca e trigger BEFORE; 
+-- :OLD nu poate fi modificat (nici :NEW daca era un delete ca e null)
+rollback; 
+
+--- CUM sa accesam valorile dintr-o coloana de tip Nested Table---
+drop table stud;/
+drop type note_stud;/
+
+CREATE OR REPLACE TYPE note_stud IS TABLE OF number;
+/
+create table stud as select * from studenti;
+/
+alter table stud add coloana_note note_stud NESTED TABLE coloana_note STORE AS lista;
+/
+update stud set coloana_note = note_stud(5,8,9,10) where id=1;
+/
+update stud set coloana_note = note_stud(7,6,8) where id=2;
+/
+
+select coloana_note from stud where id in (1,2);
+
+CREATE OR REPLACE TRIGGER marire_nota1
+  before UPDATE  ON stud   
+  FOR EACH ROW 
+
+BEGIN
+
+  dbms_output.put_line('ID note: ' || :OLD.id); 
+  for i in 1..:old.coloana_note.count loop
+    dbms_output.put_line('Vechea nota: ' || :old.coloana_note(i));  
+    dbms_output.put_line('Noua nota: ' || :new.coloana_note(i) ); 
+  IF (:OLD.coloana_note(i)>:NEW.coloana_note(i)) THEN 
+        dbms_output.put_line('Nu se modifica nota');
+        :NEW.coloana_note(i) := :OLD.coloana_note(i);
+  end if;  
+end loop;
+
+END;
+
+update stud set coloana_note = note_stud(4,9,10) where id=2;
+select coloana_note from stud where id in (1,2);
+rollback;
+
+--------------Aparitia erorilor de tip Mutating Table: PENTRU TRIGGERE EACH ROW --------------------
+
+create or replace trigger mutate_example
+after delete on note for each row
+declare 
+   v_ramase int;
+begin
+   dbms_output.put_line('Stergere nota cu ID: '|| :OLD.id);
+   select count(*) into v_ramase from note;
+   dbms_output.put_line('Au ramas '|| v_ramase || ' note.');
+--daca le comentam se fac face delete    
+end;
+/
+delete from note where id between 101 and 110;
+/
+-- nu se poate declansa triggerul pentru ca este de tip each row si de fiecare cand se face delete se face si citire
+-- daca se comenteaza liniile de cod cu select si afisarea nr de note ramase, triggerul va functiona
+rollback;
+drop trigger mutate_example;
+--SOLUTII---
+--Utilizarea triggerilor compusi
+--Utilizarea unei tabele temporare
+
+--TRIGGER COMPUS---
+CREATE OR REPLACE TRIGGER stergere_note 
+FOR DELETE ON NOTE
+COMPOUND TRIGGER
+  v_ramase INT;
+  
+  AFTER EACH ROW IS 
+  BEGIN
+     dbms_output.put_line('Stergere nota cu ID: '|| :OLD.id);
+  END AFTER EACH ROW;
+  
+  AFTER STATEMENT IS 
+  BEGIN
+     select count(*) into v_ramase from note;
+     dbms_output.put_line('Au ramas '|| v_ramase || ' note.');  
+  END AFTER STATEMENT ;
+END stergere_note;
+
+delete from note where id between 241 and 250;
+rollback;
+
+
+drop trigger dml_stud;/
+drop trigger dml_stud1;/
+drop trigger dml_stud2;/
+drop trigger marire_nota;/
+drop trigger mutate_example;/
+drop trigger stergere_note;/
+drop trigger primul;/
+drop trigger  doi;/
+
+----FOLLOWS si PRECEDES 
+create or replace trigger primul
+    before update of valoare on note
+    for each row
+    begin
+      if :old.valoare>:new.valoare then 
+        :new.valoare:=:old.valoare;  --in primul trigger modificam nota noua daca e mai mica
+        
+      end if;
+end;
+/
+create or replace trigger doi
+    before update of valoare on note
+    for each row
+    begin
+      dbms_output.put_line('Nota initiala este '||:old.valoare||' si noua nota este: '||:new.valoare);
+      --in al doilea trigger afisam direct 
+end;
+/
+select valoare from note where id=1;
+update note set valoare = 4 where id=1;
+/* Se va afisa ca nota noua este 4 desi noi am modificat in primul trigger valoare 
+pentru nota cea noua in cazul in care este mai mica. 
+Acest lucru are loc pentru ca intai se declanseaza triggerul doi si apoi primul.
+Solutia este FOLLOWS */
+rollback;
+
+drop trigger doi;/
+create or replace trigger doi
+    before update of valoare on note
+    for each row
+    follows primul
+    begin
+      dbms_output.put_line('Nota initiala este '||:old.valoare||' si noua nota este: '||:new.valoare);
+      --in al doilea trigger afisam direct 
+end;
+
+select valoare from note where id=1; 
+update note set valoare = 4 where id=1; -- acum se afiseaza corect noua nota
+rollback;
+
+
+drop trigger primul;/
+drop trigger doi;/
+
+--------------Triggere de tipul instead of----------------
+--- DOAR PESTE VIEW-uri
+drop view std;/
+create view std as select * from studenti;/
+
+CREATE OR REPLACE TRIGGER delete_student
+  INSTEAD OF delete ON std
+BEGIN
+  dbms_output.put_line('Stergem pe:' || :OLD.nume);
+  delete from note where id_student=:OLD.id;
+  delete from prieteni where id_student1=:OLD.id;
+  delete from prieteni where id_student2=:OLD.id;
+  delete from studenti where id=:OLD.id;
+END;
+
+delete from std where id=75;
+select * from studenti where id=75;
+rollback;
+
+drop trigger delete_student;
+
+
+----------------2. Triggere DDL ------------
+-- de tipul before, after sau instead.
+-- modificata schema de baze de date: drop, alter, create sau de tipul instead of create.
+
+CREATE OR REPLACE TRIGGER drop_trigger
+  BEFORE DROP ON student.SCHEMA --numele userului vostru, la mine este student
+  BEGIN
+    RAISE_APPLICATION_ERROR (
+      num => -20000,
+      msg => 'can''t touch this');
+  END;
+/
+
+drop table note;
+
+CREATE OR REPLACE TRIGGER t
+  INSTEAD OF CREATE ON SCHEMA
+  BEGIN
+    EXECUTE IMMEDIATE 'CREATE TABLE T (n NUMBER, m NUMBER)';
+  END;
+/
+create table a(x number); -- de fapt va crea tabelul T.
+select * from  a;
+select * from  t;
+
+
+drop trigger drop_trigger;/
+drop trigger t;/
+drop table t;/
+
+
+---------------Triggere  Sistem-------
+--DOAR DIN SYS ACOUNT
+drop table authentications;
+create table authentications(lname varchar2(30), log_time timestamp)
+/
+
+CREATE OR REPLACE TRIGGER check_user
+  AFTER LOGON ON DATABASE
+DECLARE
+  v_name VARCHAR2(30);
+BEGIN
+  v_name := ora_login_user;
+  INSERT INTO authentications VALUES(v_name, CURRENT_TIMESTAMP);
+END;
+/
+
+-- acceses o conexiune noua pe contul student
+select * from authentications order by log_time desc;
+
+
+
+--  PLSQL 5 --
+-- EXCEPTII----
+
+set serveroutput on;
+CREATE OR REPLACE FUNCTION nota_recenta_student(
+    pi_id_student IN studenti.id%type)
+  RETURN VARCHAR2
+AS
+  nota_recenta INTEGER;
+  mesaj        VARCHAR2(32767);
+BEGIN
+  SELECT valoare
+  INTO nota_recenta
+  FROM
+    (SELECT valoare
+    FROM note
+    WHERE id_student = pi_id_student 
+    ORDER BY data_notare DESC
+    )
+  WHERE rownum <= 1;
+  mesaj        := 'Cea mai recenta nota a studentului cu id-ul ' 
+                    || pi_id_student || ' este ' || nota_recenta || '.';
+  RETURN mesaj;
+END nota_recenta_student;
+
+
+select nota_recenta_student(-1) from dual;
+
+
+--insert into studenti values ((select max(id)+1 from studenti), 'CD100', 'C','D',1,'E2',null,sysdate,null,null,null);
+--select max(id) from studenti;--=> studentul cu id-ul 1026 este stud adaugat de mine fara note
+  
+select nota_recenta_student(1026) from dual;
+select nota_recenta_student(1) from dual;
+
+delete from note where id_Student=1026;
+
+begin
+  -- dbms_output.put_line(nota_recenta_student(-1));  -- nu exista student
+    dbms_output.put_line(nota_recenta_student(1026));  -- exista dar nu are note
+end;
+
+--- Utilizare exception----
+CREATE OR REPLACE FUNCTION nota_recenta_student(
+    pi_id_student IN studenti.id%type)
+  RETURN VARCHAR2
+AS
+  nota_recenta INTEGER;
+  mesaj        VARCHAR2(32767);
+  counter      INTEGER;
+BEGIN
+  SELECT valoare
+  INTO nota_recenta
+  FROM
+    (SELECT valoare
+    FROM note
+    WHERE id_student = pi_id_student 
+    ORDER BY data_notare DESC
+    )
+  WHERE rownum <= 1;
+  mesaj        := 'Cea mai recenta nota a studentului cu matricolul ' || pi_id_student || ' este ' || nota_recenta || '.';
+  RETURN mesaj;
+EXCEPTION
+    WHEN no_data_found THEN
+        SELECT COUNT(*) INTO counter FROM studenti WHERE id = pi_id_student ;
+    IF counter = 0 THEN
+     mesaj   := 'Studentul cu ID-ul ' || pi_id_student || ' nu exista in baza de date.';
+    ELSE
+        SELECT COUNT(*) INTO counter FROM note WHERE id_student = pi_id_student ;
+    IF counter = 0 THEN
+      mesaj   := 'Studentul cu ID-ul ' || pi_id_student || ' nu are nici o nota.';
+    END IF;
+  END IF;
+    RETURN mesaj;
+END nota_recenta_student;
+
+select nota_recenta_student(-1) from dual;
+select nota_recenta_student(1) from dual;
+select nota_recenta_student(1026) from dual;
+
+begin
+    dbms_output.put_line(nota_recenta_student(1026));
+end;
+
+
+-- TIPURI de EXCEPTII------- 
+DECLARE  
+   e_bad_date_format   EXCEPTION;  
+   PRAGMA EXCEPTION_INIT (e_bad_date_format, -1830); 
+   --aici rescriem mesajul exceptiei -1830, altfel nu este captata exceptia
+   
+BEGIN  
+   DBMS_OUTPUT.put_line (TO_DATE ('10-04-2010', 'DD-YYYY')); 
+   --aici se arunca o exceptie predefinita de catre SGBD (codul -1830)
+EXCEPTION  
+   WHEN e_bad_date_format  
+   THEN  
+      DBMS_OUTPUT.put_line ('Bad date format'); 
+END; 
+
+----Cum folosim o exceptie---
+-- 1. Aruncam exceptia cu raise_application_error cu cod dat de noi si mesaj eroare fara a denumi exceptia
+CREATE OR REPLACE FUNCTION nota_recenta_student(
+    pi_id_student IN studenti.id%type)
+  RETURN VARCHAR2
+AS
+  nota_recenta INTEGER;
+  mesaj        VARCHAR2(32767);
+  counter      INTEGER;
+BEGIN
+  SELECT valoare
+  INTO nota_recenta
+  FROM
+    (SELECT valoare
+    FROM note
+    WHERE id_student = pi_id_student 
+    ORDER BY data_notare DESC
+    )
+  WHERE rownum <= 1;
+  mesaj        := 'Cea mai recenta nota a studentului cu ID-ul ' || pi_id_student || ' este ' || nota_recenta || '.';
+  RETURN mesaj;
+EXCEPTION
+WHEN no_data_found THEN
+  SELECT COUNT(*) INTO counter FROM studenti WHERE id = pi_id_student ;
+  IF counter = 0 THEN
+    raise_application_error (-20001,'Studentul cu ID-ul ' || pi_id_student || ' nu exista in baza de date.');
+  ELSE
+    SELECT COUNT(*) INTO counter FROM note WHERE id_student = pi_id_student;
+    IF counter = 0 THEN
+      raise_application_error (-20002,'Studentul cu ID-ul ' || pi_id_student|| ' nu are nici o nota.');
+    END IF;
+  END IF;
+END nota_recenta_student;
+
+begin
+    dbms_output.put_line(nota_recenta_student(-1));
+  --  dbms_output.put_line(nota_recenta_student(1026));
+end;
+
+
+--2. o definim noi si o aruncam cu raise numele exceptiei
+CREATE OR REPLACE FUNCTION nota_recenta_student(
+    pi_id_student IN studenti.id%type)
+  RETURN VARCHAR2
+AS
+  nota_recenta       INTEGER;
+  mesaj              VARCHAR2(32767);
+  counter            INTEGER;
+  
+  student_inexistent EXCEPTION;  -- prima exceptie
+  PRAGMA EXCEPTION_INIT(student_inexistent, -20001);
+  
+  student_fara_note EXCEPTION;  -- a doua exceptie
+  PRAGMA EXCEPTION_INIT(student_fara_note, -20002);
+BEGIN
+  SELECT COUNT(*) INTO counter FROM studenti WHERE id = pi_id_student ;
+  IF counter = 0 THEN
+    raise student_inexistent;
+  ELSE
+    SELECT COUNT(*) INTO counter FROM note WHERE id_student = pi_id_student ;
+    IF counter = 0 THEN
+      raise student_fara_note;
+    END IF;
+  END IF;
+  
+SELECT valoare
+INTO nota_recenta
+FROM
+  (SELECT valoare
+  FROM note
+  WHERE id_student = pi_id_student 
+  ORDER BY data_notare DESC
+  )
+WHERE rownum <= 1;
+mesaj        := 'Cea mai recenta nota a studentului cu ID-ul ' || pi_id_student || ' este ' || nota_recenta || '.';
+RETURN mesaj;
+
+EXCEPTION
+WHEN student_inexistent THEN
+ --raise_application_error (-20001,'Studentul cu ID-ul ' || pi_id_student || ' nu exista in baza de date.'); 
+  -- practic cu raise_application se arunca iar exceptia cu cod 20001 
+  return 'Student '||pi_id_student||' indexistent';
+WHEN student_fara_note THEN
+ -- raise_application_error (-20002,'Studentul cu ID-ul ' || pi_id_student || ' nu are nici o nota.');
+  return 'Studentul '||pi_id_student||' nu are note';
+END nota_recenta_student; 
+
+-- testam functiile, intai nu exista student, apoi nu are note
+begin
+    dbms_output.put_line(nota_recenta_student(1026));
+  --  dbms_output.put_line(nota_recenta_student(-1));
+end;
+
+-----------------------------
+-- cum functioneaza codul PLSQL la tratarea exceptiilor
+declare
+  testex exception;
+  PRAGMA EXCEPTION_INIT(testex, -20001);
+begin  
+  begin
+    raise testex; -- aici se opreste executia si sare la zona se exception din bloc, daca exista, daca nu se propaga in blocul extern 
+    dbms_output.put_line('Cod ce NU se va mai executa... se va sari la tratarea exceptiei.');
+    exception
+      when testex then
+        dbms_output.put_line('Exceptia.');
+        dbms_output.put_line('Cod ce se va executa... pentru ca exceptia a fost deja tratata.');  
+  end;
+  dbms_output.put_line('Cod ce se va executa... pentru ca nu este in acelasi bloc cu cel in care s-a produs exceptia.');
+end; 
+
+--------EXCEPTII IN SUBPROGRAME---------------
+create or replace function test_ex (p_var IN INT)
+RETURN INT as 
+    testex exception;
+    PRAGMA EXCEPTION_INIT(testex, -20001);
+begin
+    if (p_var = 0) then raise testex;
+    else return p_var+1;
+    end if ;
+END; 
+
+DECLARE
+    ex_1 exception;
+    PRAGMA EXCEPTION_INIT(ex_1, -20001);
+BEGIN 
+    dbms_output.put_line(test_ex(0));
+EXCEPTION
+ WHEN ex_1 then --poate fi inlocuit si cu WHEN OTHERS, caz in care nu mai trebuie sectiunea de declare, dar prinde tot... si alte exceptii daca sunt
+  dbms_output.put_line('L-am prins pe 0');
+-- when others then dbms_output.put_line(SQLERRM||' '||SQLCODE) ; 
+ --atribute pentru a afla mesajul de eroare si codul erorii 
+ -- ATENTIE! nu este varianta cea mai buna a se folosi OTHERS
+END; 
+
+/* aceasta varianta de fapt declara aceeasi exceptie atat in subprogram cat si in blocul anonim apelant.
+ Elegant si mult mai indicat este sa nu declarati exceptia de doua ori, pentru a fi captata in blocul anonim
+deoarece ce se intampla daca acelasi subprogram va fi apelat de mai multe blocuri anonime, vom declara mereu
+aceeasi exceptie? Solutia este in laborator, cititi cu atentie.
+*/
+---------------------------------------------------------
+--Exceptii predefinite: 
+https://docs.oracle.com/cd/B10501_01/appdev.920/a96624/07_errs.htm#784
+
+---------------------------
+alter table note add constraint nota_unica unique (id_student, id_curs);
+
+drop constraint nota_unica;
+
+declare
+numar number;
+begin
+for i in 1..1000000 loop
+    select count(*) into numar from note where id_student=1 and id_curs=1;
+    if numar = 0 then  
+        insert into note values( 
+        (select max(id)+1 from note), 1, 1, 10, sysdate, null, null  );
+    end if;    
+end loop;
+end;
+
+
+begin
+for i in 1..1000000 loop
+    begin
+        insert into note values( 
+    (select max(id)+1 from note), 1, 
+    (select id from cursuri where titlu_curs like 'Logică'), 10, sysdate, null, null); 
+    exception
+     when DUP_VAL_ON_INDEX then null;
+    end;
+end loop;
+end;
+
+-- aprox 300 sec
+
+
+-------2----
+Construiti o functie PLSQL care sa primeasca ca parametri numele si prenumele unui student si 
+care sa returneze media si, in caz ca nu exista acel student (dat prin nume si prenume) 
+sa arunce o exceptie definita de voi. Dintr-un bloc anonim care contine intr-o structura de 
+tip colectie mai multe nume si prenume (trei studenti existenti si trei care nu sunt in baza de date),
+apelati functia cu diverse valori. Prindeti exceptia si afisati un mesaj corespunzator atunci cand 
+studentul nu exista sau afisati valoarea returnata de functie daca studentul exista. 
+
+create or replace function media(p_lname students.lname%type, p_fname students.fname%type) 
+return number is
+    nr number;
+    v_median number;
+    no_student exception;
+    PRAGMA EXCEPTION_INIT(no_student, -20001);
+begin
+    select count(*) into nr from students where lname like p_lname and fname like p_fname;
+    if nr = 0 then 
+        raise no_student; 
+    end if;
+    select trunc(avg(value),2) into v_median from grades where id_student = 
+        (select id from students where lname like p_lname and fname like p_fname);
+    return v_median;
+end;
+
+declare
+    no_student exception;
+    PRAGMA EXCEPTION_INIT(no_student, -20001);
+    
+    type stud is table of varchar2(100);
+    list_fname stud:= stud(); list_lname stud:=stud();
+begin
+    list_lname:=stud('Ruiz','Warren','Saunders','A','C','E');
+    list_fname:=stud('Sara Annie','Alice Amy','Virginia Annie','B','D','F');
+    for i in 1 ..6 loop
+    begin
+       dbms_output.put_line('Student '||list_lname(i)||' '||list_fname(i)||
+            ' has AVG: '||media(list_lname(i), list_fname(i)) );
+    
+    exception
+        when no_student then dbms_output.put_line('Where is no student '||list_lname(i)
+                ||' '||list_fname(i));
+    end;
+    end loop;
+end;
+
+
+
+
+EXEMPLU 1:
+/* Creati o procedura care primeste ca argumente un id de student si un procent prin care
+i se va modifica bursa acelui student cu acel procent. Daca bursa este null se considera valoarea 100.
+Adaugati la tabela studenti o coloana noua in care sa retineti istoricul burselor modificate.
+Prin intermediul aceleiasi proceduri salvati in aceasta coloana lista cu modificarile burselor.
+
+Intr-un bloc anonim apelati procedura de modificare bursa pentru o lista de 5 studenti la alegere, 
+de 3 ori consecutiv dupa care verificati printr-un select pe coloana noua adaugata 
+valorile modificate ale bursei.
+*/
+create or replace type list_bursa is table of number;
+alter table studenti add liste_burse list_bursa nested table liste_burse store as lista1;
+
+create or replace procedure modific_bursa
+(p_id studenti.id%type, p_procent number) is
+    v_bursa studenti.bursa%type;
+    lista list_bursa;
+begin
+    select nvl(bursa,100) into v_bursa from studenti where id=p_id;
+
+    v_bursa:= v_bursa+v_bursa*p_procent/100;
+    update studenti set bursa= v_bursa where id=p_id;
+   
+    select liste_burse into lista from studenti where  id=p_id;
+    if lista is null then
+        lista :=list_bursa(); 
+        lista.extend; 
+        lista(lista.count):=v_bursa;
+        update studenti set liste_burse = lista where id = p_id;
+
+    else 
+        lista.extend; 
+        lista(lista.count):=v_bursa;
+        update studenti set liste_burse = lista where id=p_id;
+    end if;
+end;
+/
+
+declare
+v_id_stud list_bursa:=list_bursa();
+
+begin
+    v_id_stud:=list_bursa(10,11,12,13,14); 
+for j in 1..3 loop
+    for i in v_id_stud.first..v_id_stud.last loop 
+        modific_bursa(v_id_stud(i), 10);   
+    end loop;
+end loop;
+end;
+/
+select liste_burse  from studenti where id in (10,11,12,13,14);
+
+update studenti set liste_burse = null where id in (10,11,12,13,14);
+update studenti set bursa = null where id in (10,11,12,13,14);
+rollback;
+
+
+
+
+EXEMPLU 2:
+--------Packages------
+set serveroutput on;
+
+CREATE OR REPLACE PACKAGE manager_facultate IS
+    g_today_date   DATE:= SYSDATE;
+    CURSOR student_list IS 
+        SELECT nr_matricol, nume, prenume, grupa, an 
+        FROM studenti ORDER BY nume;
+    PROCEDURE adauga_student (nume studenti.nume%type, prenume studenti.prenume%type);
+    PROCEDURE sterge_student (nr_matr studenti.nr_matricol%type);
+END manager_facultate;
+/
+CREATE OR REPLACE PACKAGE BODY manager_facultate IS
+
+    nume_facultate VARCHAR2(100) := 'Facultatea de Informatica din IASI';
+
+    FUNCTION calculeaza_varsta (data_nastere DATE) RETURN INT AS
+    BEGIN
+       RETURN FLOOR((g_today_date - data_nastere)/365.25);
+    END calculeaza_varsta;   
+
+    PROCEDURE adauga_student (nume studenti.nume%type, prenume studenti.prenume%type)
+       IS BEGIN
+           DBMS_OUTPUT.PUT_LINE('Exemplu apel functie privata: '|| calculeaza_varsta(to_date('01/01/1990','DD/MM/YYYY')));
+           DBMS_OUTPUT.PUT_LINE('Aici ar trebui sa scrieti cod pentru adaugarea unui student');
+    END adauga_student;
+    
+    PROCEDURE sterge_student (nr_matr studenti.nr_matricol%type) IS
+    BEGIN
+       null; -- nu face nimic
+    END sterge_student;
+    
+END manager_facultate;   
+/
+Describe manager_facultate;
+
+BEGIN
+   manager_facultate.adauga_student('Popescu', 'Ana');
+END;
+
+DROP PACKAGE BODY manager_facultate;
+DROP PACKAGE  manager_facultate;
+
+----------------------------------- OBJECTS ------------------------------
+
+drop table studenti_oop
+/
+drop type student_bazat
+/
+drop type student
+/
+
+CREATE OR REPLACE TYPE student AS OBJECT
+(
+ nume varchar2(10),
+ prenume varchar2(10),
+ grupa varchar2(4),
+ an number(1), 
+ data_nastere date,
+ NOT FINAL member procedure afiseaza_foaie_matricola,
+ CONSTRUCTOR FUNCTION student(nume varchar2, prenume varchar2)
+    RETURN SELF AS RESULT,
+-- MAP member function varsta_in_zile return number
+ ORDER member function compara(std student) return number
+)NOT FINAL;
+
+CREATE OR REPLACE TYPE BODY student AS
+   MEMBER PROCEDURE afiseaza_foaie_matricola IS
+   BEGIN
+       DBMS_OUTPUT.PUT_LINE('This procedure computes and displays the report card');
+   END afiseaza_foaie_matricola;
+   
+  CONSTRUCTOR FUNCTION student(nume varchar2, prenume varchar2)
+    RETURN SELF AS RESULT
+  AS
+  BEGIN
+    SELF.nume := nume;
+    SELF.prenume := prenume;
+    SELF.data_nastere := sysdate;
+    SELF.an := 1;
+    SELF.grupa := 'A1';
+    RETURN;
+  END;
+
+ /*MAP member function varsta_in_zile return number
+ IS
+ Begin
+    return trunc(sysdate - self.data_nastere); 
+ End; */
+
+ ORDER member function compara(std student) return number is
+ begin
+    if self.data_nastere > std.data_nastere then return -1;
+    elsif self.data_nastere = std.data_nastere then return 0;
+    else return 1;
+    end if;
+ end; 
+END;
+
+--------- CREATE TABLE with Objects --------------
+CREATE TABLE studenti_oop (nr_matricol VARCHAR2(4), obiect STUDENT);
+
+------ANONIMOUS BLOCK-------------
+DECLARE
+   v_student1 STUDENT;
+   v_student2 STUDENT;
+   
+   v_student3 STUDENT;
+BEGIN
+   v_student1 := student('Marga', 'Ion', 'A2', 3, TO_DATE('11/04/1994', 'dd/mm/yyyy'));
+   v_student2 := student('Pruna', 'George', 'A4', 3, TO_DATE('22/03/1995', 'dd/mm/yyyy'));
+   v_student1.afiseaza_foaie_matricola();
+   dbms_output.put_line(v_student1.nume);
+   insert into studenti_oop values ('100', v_student1);
+   insert into studenti_oop values ('101', v_student2);
+   
+   v_student3 := student('Neagu','Ana');
+   v_student3.afiseaza_foaie_matricola();
+   dbms_output.put_line(v_student3.nume);
+   insert into studenti_oop values ('102', v_student3);
+   
+/*   if (v_student1 < v_student2) 
+      THEN DBMS_OUTPUT.PUT_LINE('Student '|| v_student1.nume || ' este mai tanar.');
+      ELSE DBMS_OUTPUT.PUT_LINE('Student '|| v_student2.nume || ' este mai tanar.');
+   END IF; 
+*/  
+   if v_student1.compara(v_student2) = -1 
+    then DBMS_OUTPUT.PUT_LINE('Student '|| v_student1.nume || ' este mai tanar.');
+    elsif v_student1.compara(v_student2)=0 then DBMS_OUTPUT.PUT_LINE(' Aceeasi varsta');
+    else DBMS_OUTPUT.PUT_LINE('Student '|| v_student2.nume || ' este mai tanar.');
+   END IF; 
+   
+END;
+
+select * from studenti_oop;
+
+----select order by objects from table
+select t.*, t.obiect.nume, t.obiect.prenume, t.obiect.data_nastere 
+    from studenti_oop t order by obiect; 
+
+--- select atributele obiectului
+DECLARE
+  s student;
+BEGIN
+  SELECT obiect INTO s FROM studenti_oop WHERE nr_matricol='100';
+  dbms_output.put_line(s.nume);
+END;
+
+--sau
+SELECT TREAT(obiect AS student).nume FROM studenti_oop;
+
+------------- SUBTYPE -------------------
+CREATE OR REPLACE TYPE student_bazat UNDER student
+(    
+    bursa NUMBER(6,2),
+    OVERRIDING member procedure afiseaza_foaie_matricola
+)
+/
+
+CREATE OR REPLACE TYPE BODY student_bazat AS
+    OVERRIDING MEMBER PROCEDURE afiseaza_foaie_matricola IS
+    BEGIN
+       dbms_output.put_line('bursier');
+    END afiseaza_foaie_matricola;
+END;
+/
+
+DECLARE
+   v_student_bazat1 student_bazat;
+   v_student_bazat2 student_bazat;
+BEGIN
+    v_student_bazat1 := student_bazat('Marga', 'Ion', 'A1', 2, 
+        TO_DATE('18/09/1996', 'dd/mm/yyyy'), 1000); --si bursa
+    dbms_output.put_line(v_student_bazat1.nume);
+    v_student_bazat1.afiseaza_foaie_matricola();
+    
+    v_student_bazat2 := student_bazat('Ion', 'Ion', 'A1', 2, 
+        TO_DATE('18/09/1994', 'dd/mm/yyyy'), 1050); --si bursa
+    dbms_output.put_line(v_student_bazat2.nume);
+    v_student_bazat2.afiseaza_foaie_matricola();
+
+-- compararea(ca la supertype cu MAP)   
+/*    if (v_student_bazat1  < v_student_bazat2 ) 
+      THEN DBMS_OUTPUT.PUT_LINE('Student '|| v_student_bazat1.nume || ' mai tanar.');
+      ELSE DBMS_OUTPUT.PUT_LINE('Student '|| v_student_bazat2.nume || ' mai tanar.');
+   END IF;
+*/   
+-- comparatie cu ORDER
+   if v_student_bazat1.compara(v_student_bazat2) =-1 
+    then DBMS_OUTPUT.PUT_LINE('Student '|| v_student_bazat1.nume || ' este mai tanar.');
+    elsif v_student_bazat1.compara(v_student_bazat2)=0 then DBMS_OUTPUT.PUT_LINE(' Aceeasi varsta');
+    else DBMS_OUTPUT.PUT_LINE('Student '||v_student_bazat2.nume || ' este mai tanar.');
+   END IF; 
+END;
+
+
+
+EXEMPLU 3:
+set serveroutput on;
+/*
+Creati un pachet care manageriaza activitatea unei facultati astfel:
+- are o procedura privata care returneaza varsta in ani, luni si zile ale unui student
+- o procedura care adauga un student in baza de date si ii adauga note si prietenii
+- o procedura care afiseaza statistici precum: nr matricol al unui student, media sa,
+notele si la ce cursuri, varsta sa (aveti procedura de mai sus), pozitia in top cei
+mai buni studenti, cati prieteni are, etc...
+- la alegere puteti implementa si o procedura de eliminare a unui student din BD
+*/
+
+CREATE OR REPLACE PACKAGE manager_facultate IS
+    PROCEDURE adauga_student (p_nr_mat studenti.nr_matricol%type,
+    p_nume studenti.nume%type, p_prenume studenti.prenume%type, p_dn studenti.data_nastere%type);
+    PROCEDURE statistici (p_id studenti.id%type);
+END manager_facultate;
+/
+CREATE OR REPLACE PACKAGE BODY manager_facultate IS
+    PROCEDURE calcul_varsta (p_id studenti.id%type, p_dn OUT varchar2) AS
+        v_dn studenti.data_nastere%type;
+    BEGIN
+        select data_nastere into v_dn from studenti where id=p_id;
+  
+       p_dn:= FLOOR((sysdate - v_dn)/365.25)||' ani '||
+             floor(mod((sysdate - v_dn),12))||' luni '||
+             floor(sysdate - add_months(v_dn, months_between(sysdate,v_dn)))
+             ||' zile';
+   END calcul_varsta;   
+
+    PROCEDURE adauga_student (p_nr_mat studenti.nr_matricol%type,
+    p_nume studenti.nume%type, p_prenume studenti.prenume%type, p_dn studenti.data_nastere%type) IS
+    v_id studenti.id%type;
+    BEGIN
+        DBMS_OUTPUT.PUT_LINE('Am adaugat studentul: '||p_nume||' '||p_prenume);
+        select max(id)+1 into v_id from studenti;
+        
+    insert into studenti (id,nr_matricol ,nume ,prenume , an, grupa, data_nastere)
+             values (v_id, p_nr_mat, p_nume, p_prenume, 1, 'B5', p_dn);
+
+    for i in 1..3 loop
+        insert into  note (id, id_student, id_curs, valoare, data_notare) values
+                     ( (select max(id)+1 from note), v_id, i, 10, sysdate);
+        insert into prieteni (id, id_Student1, id_Student2) values 
+                     ( (select max(id)+1 from prieteni), v_id, i);
+    end loop;
+    END adauga_student;
+
+    PROCEDURE statistici (p_id studenti.id%type) is
+    v_nr studenti.nr_matricol%type;
+    media number;
+    v_age varchar2(100);
+    nr_amici number;
+    top number;
+    Begin
+    dbms_output.put_line('Afisez statistici pentru '||p_id);
+      select nr_matricol, (select round(avg(valoare),2) from note where id_student=p_id)
+            into v_nr, media from studenti where id=p_id; 
+      dbms_output.put_line(v_nr ||' '||media);
+     
+     for line in 
+     (select titlu_curs, valoare from cursuri c join note n on c.id=n.id_curs and n.id_Student=p_id)
+     loop   
+        dbms_output.put_line(line.titlu_curs||' '||line.valoare);
+     end loop;
+    
+    calcul_varsta(p_id, v_age);
+     dbms_output.put_line(v_age);
+     
+     select count(*) into nr_amici from studenti s join prieteni p 
+            on s.id=p.id_Student1 or s.id=p.id_Student2 where s.id=p_id;
+     dbms_output.put_line(nr_amici);
+     
+     select nr into top from
+     (select id, rownum nr from
+     (select s.id from studenti s join note n on s.id=n.id_student group by s.id
+     order by avg(valoare) desc)) where id = p_id ;
+     dbms_output.put_line('Este pe pozitia '||top||' dintre toti studentii');
+     
+    End;
+    
+END manager_facultate;   
+/
+BEGIN
+   manager_facultate.adauga_student('125AB8','ANNA', 'JOHN',sysdate);
+   manager_facultate.statistici(2);
+END;
+/
+
